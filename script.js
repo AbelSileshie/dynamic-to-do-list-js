@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
-    taskInput.value = "";
+    taskInput.value.trim() = "";
   }
 
   function loadTasks() {
