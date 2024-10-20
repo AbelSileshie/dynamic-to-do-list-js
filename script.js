@@ -26,7 +26,11 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("tasks", JSON.stringify(tasks));
     }
 
-    taskInput.value.trim() = "";
+    if (taskInput.value.trim() === "") {
+      taskInput.value = alert("Please enter a task");
+    } else {
+      taskInput.value.trim = "";
+    }
   }
 
   function loadTasks() {
