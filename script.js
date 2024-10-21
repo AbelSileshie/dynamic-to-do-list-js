@@ -5,8 +5,12 @@ const newQuoteText = document.getElementById("newQuoteText");
 const newQuoteCategory = document.getElementById("newQuoteCategory");
 const categoryFilter = document.getElementById("categoryFilter");
 const conflictNotification = document.getElementById("conflictNotification");
+
+let quotes = [];
 let lastSelectedCategory =
   localStorage.getItem("lastSelectedCategory") || "all";
+let lastSyncTime = 0;
+const syncInterval = 30000;
 
 function showRandomQuote(category) {
   let filteredQuotes = quotes;
@@ -59,11 +63,21 @@ function filterQuotes() {
 }
 
 function populateCategories() {
+  const storedCategories =
+    localStorage.getItem("quotes") &&
+    JSON.parse(localStorage.getItem("quotes")).map((quote) => quote.category);
+
   const categories = quotes
     .map((quote) => quote.category)
     .filter((category, index, arr) => arr.indexOf(category) === index);
 
-  categories.forEach((category) => {
+  const allCategories = storedCategories
+    ? categories.concat(
+        storedCategories.filter((category) => !categories.includes(category))
+      )
+    : categories;
+
+  allCategories.forEach((category) => {
     const newOption = document.createElement("option");
     newOption.value = category;
     newOption.textContent = category;
@@ -72,21 +86,6 @@ function populateCategories() {
 
   categoryFilter.value = lastSelectedCategory;
 }
-
-newQuoteButton.addEventListener("click", () =>
-  showRandomQuote(lastSelectedCategory)
-);
-addQuoteForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  addQuote();
-});
-categoryFilter.addEventListener("change", filterQuotes);
-
-populateCategories();
-syncData();
-let quotes = [];
-let lastSyncTime = 0;
-const syncInterval = 30000;
 async function syncData() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
@@ -139,6 +138,8 @@ async function syncData() {
   setTimeout(syncData, syncInterval);
 }
 
+populateCategories();
+
 newQuoteButton.addEventListener("click", () =>
   showRandomQuote(lastSelectedCategory)
 );
@@ -147,7 +148,5 @@ addQuoteForm.addEventListener("submit", (event) => {
   addQuote();
 });
 categoryFilter.addEventListener("change", filterQuotes);
-
-populateCategories();
 
 syncData();
