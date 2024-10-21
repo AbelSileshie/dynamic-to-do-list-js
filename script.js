@@ -5,17 +5,14 @@ const newQuoteText = document.getElementById("newQuoteText");
 const newQuoteCategory = document.getElementById("newQuoteCategory");
 const categoryFilter = document.getElementById("categoryFilter");
 const conflictNotification = document.getElementById("conflictNotification");
-
-let quotes = [];
-let lastSyncTime = 0;
-const syncInterval = 30000;
+let lastSelectedCategory =
+  localStorage.getItem("lastSelectedCategory") || "all";
 
 function showRandomQuote(category) {
   let filteredQuotes = quotes;
   if (category !== "all") {
     filteredQuotes = quotes.filter((quote) => quote.category === category);
   }
-
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   const randomQuote = filteredQuotes[randomIndex];
 
@@ -39,7 +36,7 @@ function addQuote() {
 
   quoteDisplay.appendChild(newQuoteElement);
 
-  if (!categories.includes(newQuote.category)) {
+  if (!categoryFilter.options.namedItem(newQuote.category)) {
     const newOption = document.createElement("option");
     newOption.value = newQuote.category;
     newOption.textContent = newQuote.category;
@@ -69,13 +66,27 @@ function populateCategories() {
   categories.forEach((category) => {
     const newOption = document.createElement("option");
     newOption.value = category;
-    newOption.textContent = newQuote.category;
+    newOption.textContent = category;
     categoryFilter.appendChild(newOption);
   });
 
   categoryFilter.value = lastSelectedCategory;
 }
 
+newQuoteButton.addEventListener("click", () =>
+  showRandomQuote(lastSelectedCategory)
+);
+addQuoteForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  addQuote();
+});
+categoryFilter.addEventListener("change", filterQuotes);
+
+populateCategories();
+syncData();
+let quotes = [];
+let lastSyncTime = 0;
+const syncInterval = 30000;
 async function syncData() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
